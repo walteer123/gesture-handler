@@ -20,42 +20,43 @@ constructor(
     defStyleRes: Int = 0
 ) : ConstraintLayout(context, attributeSet, defStyleAttr, defStyleRes), View.OnTouchListener {
 
-    private val binding: PullToRefreshViewBinding = PullToRefreshViewBinding.inflate(LayoutInflater.from(context), this, true)
+    private var binding: PullToRefreshViewBinding? = null
     private var dy: Float = 0F
     private var refreshListener: OnRefreshListener? = null
 
     init {
-        View.inflate(context, R.layout.pull_to_refresh_view, this)
-        binding?.refreshContainer.setOnTouchListener(this)
+        binding = PullToRefreshViewBinding.inflate(LayoutInflater.from(context), this, true)
+        //View.inflate(context, R.layout.pull_to_refresh_view, this)
+        binding?.refreshContainer?.setOnTouchListener(this)
     }
 
     override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams) {
         if (binding?.refreshContainer == null) {
             super.addView(child, index, params)
         } else {
-            binding.refreshContainer.addView(child, index, params)
+            binding?.refreshContainer?.addView(child, index, params)
         }
     }
 
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
         return when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                val containerY = binding.refreshContainer.translationY
+                val containerY = binding?.refreshContainer?.translationY ?: 0F
                 dy = containerY - event.rawY
                 true
             }
             MotionEvent.ACTION_MOVE -> {
                 val newY = event.rawY + dy
-                val viewHeight = binding.pullToRefreshView.height
+                val viewHeight = binding?.pullToRefreshView?.height
 
-                if (newY <= 0 || newY >= viewHeight.div(2))
+                if (newY <= 0 || newY >= viewHeight?.div(2) ?: 0)
                     return true
 
                 moveToPos(newY)
                 true
             }
             MotionEvent.ACTION_UP -> {
-                val progressHeight = binding.refreshProgressIndicator.height
+                val progressHeight = binding?.refreshProgressIndicator?.height ?: 0
                 val posToBeMoved =
                     if(event.y < progressHeight)
                         0F
@@ -72,7 +73,7 @@ constructor(
     }
 
     private fun moveToPos(newY: Float) {
-        binding.refreshContainer.animate().apply {
+        binding?.refreshContainer?.animate()?.apply {
             y(newY)
             duration = 0
             start()
@@ -80,7 +81,7 @@ constructor(
     }
 
     fun setRefreshing(isRefreshing: Boolean) {
-       // binding.refreshProgressIndicator.set
+       // binding?.refreshProgressIndicator.set
     }
 
     fun setOnRefreshListener(listener: OnRefreshListener) {
